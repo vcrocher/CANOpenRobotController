@@ -72,7 +72,7 @@ class FLNLHelper
         /**
         * \brief Default destructor also closing connection
         */
-        ~FLNLHelper(){
+        ~FLNLHelper() {
             if(FLNLServer.IsConnected())
                 FLNLServer.Disconnect();
         }
