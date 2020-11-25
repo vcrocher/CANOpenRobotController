@@ -80,7 +80,7 @@ void M3DemoImpedanceState::entryCode(void) {
     robot->initTorqueControl();
     std::cout << "Press Q to select reference point, S/W to tune K gain and A/D for D gain" << std::endl;
     lastX = robot->getEndEffPosition();
-    OWNER->Energy = VM3(0,0,0);
+    OWNER->Energy = VM3(0,0,0); //Reset energy
 }
 void M3DemoImpedanceState::duringCode(void) {
 
@@ -121,7 +121,44 @@ void M3DemoImpedanceState::duringCode(void) {
     if(X[0]>xWall) {
         //Apply wall impedance (spring)
         Fe[0] = k*(xWall-X[0]);
-        Fc = Fe;
+
+        enum PCType {NO=0, Classic=1, Power=2, Ryu05_1=3, Ryu05_2=4};
+        PCType pc_type=NO;
+        switch(pc_type) {
+
+            //No PC
+            case NO:
+                Fc = Fe;
+                break;
+
+            //Classic PO-PC
+            case Classic:
+                Fc = Fe;
+                if(OWNER->Energy[0]<0) {
+                    Fc[0] = Fe[0] - OWNER->Energy[0]/(X-lastX)[0];
+                }
+                break;
+
+            //Power PO-PC
+            case Power:
+                Fc = Fe;
+                if(OWNER->Power[0]<0) {
+                    Fc[0] = Fe[0] - OWNER->Power[0]/robot->getEndEffVelocity()[0];
+                }
+                break;
+
+            //PO with model
+            /*case Ryu05_1:
+                Fc = Fe;
+                if(OWNER->Energy<0) {
+                    Fc[0] = Fe[0] - OWNER->Energy/(X-lastX) + 0.5*????;
+                }
+                break;*/
+
+            default:
+                Fc = Fe;
+        }
+
         //std::cout << "K=" << k << " D=" << d << " => F=" << F << " N" <<std::endl;
     }
 

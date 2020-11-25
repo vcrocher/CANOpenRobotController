@@ -68,6 +68,7 @@ void M3Passivity::end() {
     if(initialised) {
         if(logHelper.isStarted())
             logHelper.endLog();
+        UIserver->closeConnection();
         currentState->exit();
         robot->disable();
     }
