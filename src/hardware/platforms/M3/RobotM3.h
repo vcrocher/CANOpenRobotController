@@ -86,7 +86,7 @@ class RobotM3 : public Robot {
 
     Eigen::VectorXd endEffPositions;
     Eigen::VectorXd endEffVelocities;
-    Eigen::VectorXd endEffForces;
+    Eigen::VectorXd endEffForces; //TODO: Remove, meaningless: should take value of interactionForces
     Eigen::VectorXd interactionForces;
 
    public:

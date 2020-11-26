@@ -8,7 +8,7 @@ M3Passivity::M3Passivity() {
     // Create PRE-DESIGNED State Machine events and state objects.
     calibState = new M3CalibState(this, robot);
     impedanceState = new M3DemoImpedanceState(this, robot);
-    minJerkState = new M3DemoMinJerkPosition(this, robot);
+    //minJerkState = new M3DemoMinJerkPosition(this, robot);
 
     endCalib = new EndCalib(this);
     goToNextState = new GoToNextState(this);
@@ -20,9 +20,7 @@ M3Passivity::M3Passivity() {
      * NewTranstion(State A,Event c, State B)
      *
      */
-     NewTransition(calibState, endCalib, minJerkState);
-     NewTransition(minJerkState, goToNextState, impedanceState);
-     NewTransition(impedanceState, goToNextState, minJerkState);
+     NewTransition(calibState, endCalib, impedanceState);
 
 
     //Initialize the state machine with first state of the designed state machine, using baseclass function.

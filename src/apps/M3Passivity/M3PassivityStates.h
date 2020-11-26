@@ -133,9 +133,9 @@ class M3DemoImpedanceState : public M3TimedState {
 
    private:
     VM3 lastX;
+    bool wallActive;
     double xWall = -0.5;    //! Virtual wall position
     double k = 1000;        //! Impedance proportional gain (spring)
-    double d = 1;           //! Impedance derivative gain (damper)
     bool init=false;
 
     unsigned int nb_samples=10000;

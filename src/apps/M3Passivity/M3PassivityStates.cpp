@@ -78,8 +78,9 @@ void M3CalibState::exitCode(void) {
 
 void M3DemoImpedanceState::entryCode(void) {
     robot->initTorqueControl();
-    std::cout << "Press Q to select reference point, S/W to tune K gain and A/D for D gain" << std::endl;
+    std::cout << "Press Q to activate virtual wall, S/W to tune wall stiffness" << std::endl;
     lastX = robot->getEndEffPosition();
+    wallActive = false;
     OWNER->Energy = VM3(0,0,0); //Reset energy
 }
 void M3DemoImpedanceState::duringCode(void) {
@@ -87,24 +88,23 @@ void M3DemoImpedanceState::duringCode(void) {
     //K tuning
     if(robot->keyboard->getS()) {
         k -= 50;
-        std::cout << "K=" << k << " D=" << d<< std::endl;
+        std::cout << "K=" << k << std::endl;
     }
     if(robot->keyboard->getW()) {
         k += 50;
-        std::cout << "K=" << k << " D=" << d<< std::endl;
+        std::cout << "K=" << k << std::endl;
     }
     Eigen::Matrix3d K = k*Eigen::Matrix3d::Identity();
 
-    //D tuning
-    if(robot->keyboard->getD()) {
-        d -= 10;
-        std::cout << "K=" << k << " D=" << d<< std::endl;
+    //Turn on/off wall
+    if(robot->keyboard->getQ()) {
+        wallActive = !wallActive;
+        std::cout << "Virtual wall is now ";
+        if(wallActive)
+            std::cout << "ACTIVE." << std::endl;
+        else
+            std::cout << "OFF." << std::endl;
     }
-    if(robot->keyboard->getA()) {
-        d += 10;
-        std::cout << "K=" << k << " D=" << d<< std::endl;
-    }
-    Eigen::Matrix3d D = d*Eigen::Matrix3d::Identity();
 
 
     //Control force
@@ -118,48 +118,50 @@ void M3DemoImpedanceState::duringCode(void) {
     lastX = X;
     OWNER->Energy = OWNER->Energy + OWNER->Power;
 
-    if(X[0]>xWall) {
-        //Apply wall impedance (spring)
-        Fe[0] = k*(xWall-X[0]);
-
-        enum PCType {NO=0, Classic=1, Power=2, Ryu05_1=3, Ryu05_2=4};
-        PCType pc_type=NO;
-        switch(pc_type) {
-
-            //No PC
-            case NO:
-                Fc = Fe;
-                break;
-
-            //Classic PO-PC
-            case Classic:
-                Fc = Fe;
-                if(OWNER->Energy[0]<0) {
-                    Fc[0] = Fe[0] - OWNER->Energy[0]/(X-lastX)[0];
-                }
-                break;
-
-            //Power PO-PC
-            case Power:
-                Fc = Fe;
-                if(OWNER->Power[0]<0) {
-                    Fc[0] = Fe[0] - OWNER->Power[0]/robot->getEndEffVelocity()[0];
-                }
-                break;
-
-            //PO with model
-            /*case Ryu05_1:
-                Fc = Fe;
-                if(OWNER->Energy<0) {
-                    Fc[0] = Fe[0] - OWNER->Energy/(X-lastX) + 0.5*????;
-                }
-                break;*/
-
-            default:
-                Fc = Fe;
+    //Virtual wall
+    if(wallActive) {
+        if(X[0]>xWall) {
+            //Apply wall impedance (spring)
+            Fe[0] = k*(xWall-X[0]);
         }
+    }
 
-        //std::cout << "K=" << k << " D=" << d << " => F=" << F << " N" <<std::endl;
+    //PO-PC
+    enum PCType {NO=0, Classic=1, Power=2, Ryu05_1=3, Ryu05_2=4};
+    PCType pc_type=NO;
+    switch(pc_type) {
+
+        //No PC
+        case NO:
+            Fc = Fe;
+            break;
+
+        //Classic PO-PC
+        case Classic:
+            Fc = Fe;
+            if(OWNER->Energy[0]<0) {
+                Fc[0] = Fe[0] + OWNER->Energy[0]/(X-lastX)[0];
+            }
+            break;
+
+        //Power PO-PC
+        case Power:
+            Fc = Fe;
+            if(OWNER->Power[0]<0) {
+                Fc[0] = Fe[0] + OWNER->Power[0]/robot->getEndEffVelocity()[0];
+            }
+            break;
+
+        //PO with model
+        case Ryu05_1:
+            Fc = Fe;
+            if(OWNER->Energy[0]<0) {
+                Fc[0] = Fe[0] + OWNER->Energy[0]/(X-lastX)[0] + 0.5*k*(xWall-X[0])*(xWall-X[0]);//????????
+            }
+            break;
+
+        default:
+            Fc = Fe;
     }
 
     //Apply force
