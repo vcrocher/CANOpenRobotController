@@ -8,7 +8,7 @@ M3Passivity::M3Passivity() {
     // Create PRE-DESIGNED State Machine events and state objects.
     calibState = new M3CalibState(this, robot);
     impedanceState = new M3DemoImpedanceState(this, robot);
-    //minJerkState = new M3DemoMinJerkPosition(this, robot);
+    chirpState = new M3JointChirp(this, robot);
 
     endCalib = new EndCalib(this);
     goToNextState = new GoToNextState(this);
@@ -21,6 +21,8 @@ M3Passivity::M3Passivity() {
      *
      */
      NewTransition(calibState, endCalib, impedanceState);
+     NewTransition(impedanceState, goToNextState, impedanceState);
+     //NewTransition(impedanceState, goToNextState, chirpState);
 
 
     //Initialize the state machine with first state of the designed state machine, using baseclass function.
@@ -41,13 +43,15 @@ void M3Passivity::init() {
     if(robot->initialise()) {
         initialised = true;
         logHelper.initLogger("M3PassivityLog", "logs/M3Passivity.csv", LogFormat::CSV, true);
-        logHelper.add(time_running, "Time (s)");
+        /*logHelper.add(time_running, "Time (s)");
+        logHelper.add(robot->getPosition(), "q");
+        logHelper.add(robot->getVelocity(), "dq");
+        logHelper.add(robot->getTorque(), "tau");*/
         logHelper.add(robot->getEndEffPositionRef(), "Position");
         logHelper.add(robot->getEndEffVelocityRef(), "Velocity");
         logHelper.add(robot->getEndEffForceRef(), "Force");
-        logHelper.add(Power, "Power");
+        logHelper.add(PC, "PC");
         logHelper.add(Energy, "Energy");
-        logHelper.startLogger();
         UIserver = new FLNLHelper(robot, "192.168.7.2");
         /*UIserver->registerState(Power);
         UIserver->registerState(Energy);*/

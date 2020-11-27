@@ -7,7 +7,7 @@ short int sign(double val) { return (val > 0) ? 1 : ((val < 0) ? -1 : 0); }
 RobotM3::RobotM3() : Robot(),
                      endEffTool(&M3Handle),
                      calibrated(false),
-                     maxEndEffVel(2),
+                     maxEndEffVel(3.5),
                      maxEndEffForce(60) {
     //Define the robot structure: each joint with limits and drive: should be in constructor
     double max_speed = 360 * M_PI / 180.;

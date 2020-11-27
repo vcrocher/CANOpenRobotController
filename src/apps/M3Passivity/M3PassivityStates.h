@@ -132,6 +132,7 @@ class M3DemoImpedanceState : public M3TimedState {
     void exitCode(void);
 
    private:
+    VM3 Power;
     VM3 lastX;
     bool wallActive;
     double xWall = -0.5;    //! Virtual wall position
@@ -142,6 +143,23 @@ class M3DemoImpedanceState : public M3TimedState {
     double dts[10000];
     double dX[10000];
     int new_value;
+};
+
+
+class M3JointChirp : public M3TimedState {
+
+   public:
+    M3JointChirp(StateMachine *m, RobotM3 *M3, const char *name = "M3 DChirp state"):M3TimedState(m, M3, name){};
+
+    void entryCode(void);
+    void duringCode(void);
+    void exitCode(void);
+
+   private:
+       double T=10; //seconds
+       double a=M_PI/3; //rad.s-1
+       double fi=0.5;
+       double fn=10;
 };
 
 

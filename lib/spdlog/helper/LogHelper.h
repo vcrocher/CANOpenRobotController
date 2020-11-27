@@ -208,7 +208,7 @@ public:
         }
         else{
             if(vectorOfLogElements.size()>0){
-                std::string headerMsg = "";
+                std::string headerMsg = "%";
                 for(unsigned int i=0; i < vectorOfLogElements.size(); i++){ // iterating through each variable to get their names
                     headerMsg += vectorOfLogElements[i]->getName();
 

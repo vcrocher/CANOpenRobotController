@@ -54,16 +54,17 @@ class M3Passivity : public StateMachine {
     M3CalibState *calibState;
     M3DemoMinJerkPosition* minJerkState;
     M3DemoImpedanceState *impedanceState;
+    M3JointChirp *chirpState;
 
 
     //PO/PC
     VM3 Energy;
-    VM3 Power;
+    VM3 PC;
 
 
-   protected:
-    RobotM3 *robot; /*!< Pointer to the Robot*/
-    FLNLHelper *UIserver; /*!< Pointer to communication server*/
+   public:
+    RobotM3 *robot;         /*!< Pointer to the Robot*/
+    FLNLHelper *UIserver;   /*!< Pointer to communication server*/
 
    private:
     EventObject(EndCalib) * endCalib;

@@ -94,6 +94,7 @@ class StateMachine {
      * \brief Custom spdlogger allowing to conveniently log Eigen Vectors (among other things)
      * Required to be initialised in the derived state machine init()
      */
+    public:
     LogHelper logHelper;
 };
 

@@ -78,6 +78,7 @@ void M3CalibState::exitCode(void) {
 
 void M3DemoImpedanceState::entryCode(void) {
     robot->initTorqueControl();
+    OWNER->logHelper.startLogger();
     std::cout << "Press Q to activate virtual wall, S/W to tune wall stiffness" << std::endl;
     lastX = robot->getEndEffPosition();
     wallActive = false;
@@ -114,9 +115,9 @@ void M3DemoImpedanceState::duringCode(void) {
     VM3 X=robot->getEndEffPosition();
     VM3 Fe(0,0,0);
 
-    OWNER->Power = (X-lastX).cwiseProduct(robot->getEndEffForce());
+    Power = -(X-lastX).cwiseProduct(robot->getEndEffForce());
+    OWNER->Energy = OWNER->Energy + Power*dt;
     lastX = X;
-    OWNER->Energy = OWNER->Energy + OWNER->Power;
 
     //Virtual wall
     if(wallActive) {
@@ -125,37 +126,43 @@ void M3DemoImpedanceState::duringCode(void) {
             Fe[0] = k*(xWall-X[0]);
         }
     }
+    else {
+        Fe = -2.*robot->getEndEffVelocity();
+    }
 
     //PO-PC
-    enum PCType {NO=0, Classic=1, Power=2, Ryu05_1=3, Ryu05_2=4};
-    PCType pc_type=NO;
+    OWNER->PC[0]=0;
+    enum PCType {PC_No=0, PC_Classic=1, PC_Power=2, PC_Ryu05_1=3, PC_Ryu05_2=4};
+    PCType pc_type=PC_Power;
     switch(pc_type) {
 
         //No PC
-        case NO:
+        case PC_No:
             Fc = Fe;
             break;
 
         //Classic PO-PC
-        case Classic:
+        case PC_Classic:
             Fc = Fe;
             if(OWNER->Energy[0]<0) {
+                OWNER->PC[0] = OWNER->Energy[0]/(X-lastX)[0];
                 Fc[0] = Fe[0] + OWNER->Energy[0]/(X-lastX)[0];
             }
             break;
 
         //Power PO-PC
-        case Power:
+        case PC_Power:
             Fc = Fe;
-            if(OWNER->Power[0]<0) {
-                Fc[0] = Fe[0] + OWNER->Power[0]/robot->getEndEffVelocity()[0];
+            if(Power[0]<0 && abs(robot->getEndEffVelocity()[0])>0.0005) {
+                OWNER->PC[0] = Power[0]/robot->getEndEffVelocity()[0];
+                Fc[0] = Fe[0] + Power[0]/robot->getEndEffVelocity()[0];
             }
             break;
 
         //PO with model
-        case Ryu05_1:
+        case PC_Ryu05_1:
             Fc = Fe;
-            if(OWNER->Energy[0]<0) {
+            if(OWNER->Energy[0]<0 && abs((X-lastX)[0])>0.0001) {
                 Fc[0] = Fe[0] + OWNER->Energy[0]/(X-lastX)[0] + 0.5*k*(xWall-X[0])*(xWall-X[0]);//????????
             }
             break;
@@ -171,6 +178,38 @@ void M3DemoImpedanceState::exitCode(void) {
     robot->setEndEffForceWithCompensation(VM3::Zero());
 }
 
+
+
+void M3JointChirp::entryCode(void) {
+    //Setup velocity control for position over velocity loop
+    robot->initVelocityControl();
+    robot->setJointVelocity(VM3::Zero());
+}
+void M3JointChirp::duringCode(void) {
+
+    VM3 dqd;
+
+    double f = 0;
+    if(elapsedTime<T) {
+        double f = fi + (fn-fi)*elapsedTime/T;
+        dqd[0] = a*sin(2.*M_PI*f*elapsedTime);
+    }
+    else {
+        dqd[0] = 0;
+    }
+
+    //Apply position control
+    robot->setJointVelocity(dqd);
+
+    //Display progression
+    if(iterations%100==1) {
+        std::cout << "t="<< elapsedTime << " f=" << f << "Hz   ";
+        robot->printStatus();
+    }
+}
+void M3JointChirp::exitCode(void) {
+    robot->setJointVelocity(VM3::Zero());
+}
 
 
 void M3DemoMinJerkPosition::entryCode(void) {
