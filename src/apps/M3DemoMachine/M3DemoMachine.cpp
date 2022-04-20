@@ -61,12 +61,12 @@ M3DemoMachine::M3DemoMachine() {
 
     //Define transitions between states
     addTransition("CalibState", &endCalib, "StandbyState");
-    addTransition("StandbyState", &goToNextState, "MinJerkState");
-    addTransition("MinJerkState", &goToNextState, "ImpedanceState");
-    addTransition("ImpedanceState", &goToNextState, "PathState");
-    addTransition("PathState", &goToNextState, "EndEffState");
-    addTransition("EndEffState", &goToNextState, "TimingState");
-    addTransition("TimingState", &goToNextState, "StandbyState");
+    addTransitionFromLast(&goToNextState, "MinJerkState");
+    addTransitionFromLast(&goToNextState, "ImpedanceState");
+    addTransitionFromLast(&goToNextState, "PathState");
+    addTransitionFromLast(&goToNextState, "EndEffState");
+    addTransitionFromLast(&goToNextState, "TimingState");
+    addTransitionFromLast(&goToNextState, "StandbyState");
     addTransitionFromAny(&standby, "StandbyState");
 
     addTransition("StandbyState", &goToTele, "TeleopState");

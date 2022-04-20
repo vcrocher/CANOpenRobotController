@@ -67,7 +67,8 @@ class M3DemoState : public M3TimedState {
     void exitCode(void);
 
     VM3 qi, Xi;
-    double f=0.0;
+    VM3 tau;
+    bool lock;
 };
 
 

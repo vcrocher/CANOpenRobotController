@@ -15,9 +15,9 @@ RobotM3::RobotM3(string robot_name, string yaml_config_file) :  Robot(robot_name
     //TODO: to add joint specific parameters (reduction, torque constant) and associated YAML loading
 
     //Define the robot structure: each joint with limits and drive
-    joints.push_back(new JointM3(0, qLimits[0], qLimits[1], qSigns[0], -dqMax, dqMax, -tauMax, tauMax, new KincoDrive(1), "q1"));
-    joints.push_back(new JointM3(1, qLimits[2], qLimits[3], qSigns[1], -dqMax, dqMax, -tauMax, tauMax, new KincoDrive(2), "q2"));
-    joints.push_back(new JointM3(2, qLimits[4], qLimits[5], qSigns[2], -dqMax, dqMax, -tauMax, tauMax, new KincoDrive(3), "q3"));
+    joints.push_back(new JointM3(0, qLimits[0], qLimits[1], qSigns[0], -dqMax, dqMax, -tauMax, tauMax, iPeakDrives[0], motorCstt[0], new KincoDrive(1), "q1"));
+    joints.push_back(new JointM3(1, qLimits[2], qLimits[3], qSigns[1], -dqMax, dqMax, -tauMax, tauMax, iPeakDrives[1], motorCstt[1], new KincoDrive(2), "q2"));
+    joints.push_back(new JointM3(2, qLimits[4], qLimits[5], qSigns[2], -dqMax, dqMax, -tauMax, tauMax, iPeakDrives[2], motorCstt[2], new KincoDrive(3), "q3"));
 
     //Possible inputs: keyboard and joystick
     inputs.push_back(keyboard = new Keyboard());
@@ -47,6 +47,16 @@ bool RobotM3::loadParametersFromYAML(YAML::Node params) {
 
     if(params["tauMax"]){
         tauMax = fmin(fmax(0., params_r["tauMax"].as<double>()), 50.); //Hard constrained for safety
+    }
+
+    if(params_r["iPeakDrives"]){
+        for(unsigned int i=0; i<iPeakDrives.size(); i++)
+            iPeakDrives[i]=params_r["iPeakDrives"][i].as<double>();
+    }
+
+    if(params_r["motorCstt"]){
+        for(unsigned int i=0; i<motorCstt.size(); i++)
+            motorCstt[i]=params_r["motorCstt"][i].as<double>();
     }
 
     if(params_r["linkLengths"]){
@@ -152,6 +162,7 @@ void RobotM3::applyCalibration() {
 }
 
 void RobotM3::updateRobot() {
+    spdlog::trace("RobotM3::updateRobot()");
     Robot::updateRobot();
 
     //Update copies of end-effector values

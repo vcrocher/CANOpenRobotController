@@ -26,7 +26,9 @@
 EMU_MELB:
   dqMax: 360 # Max joint speed (deg.s-1) Set to 1 rot/s
   tauMax: 42 # Max joint torque (Nm) Set to max motor torque w/ 1:22 reduction (yes, this is the actual value!)
-
+  iPeakDrives: [45.0, 45.0, 45.0] #Drive peak current (I peak)
+  motorCstt: [0.132, 0.132, 0.132] #Motors constants
+  
   linkLengths: [0.056, 0.135, 0.5, 0.475]   # Link lengths used for kinematic models (in m), excluding tool
   linkMasses: [0., 0.450, 0.400, 0.100, .0] # Link masses used for gravity compensation (in kg), excluding tool
 
@@ -45,9 +47,11 @@ EMU_MELB:
 EMU_FOURIER:
   dqMax: 360 # Max joint speed (deg.s-1) Set to 1 rot/s
   tauMax: 42 # Max joint torque (Nm) Set to max motor torque w/ 1:22 reduction (yes, this is the actual value!)
+  iPeakDrives: [45.0, 23.0, 23.0] #Drive peak current (I peak): Values look wrong but work on real system in combination w/ below motor constants.
+  motorCstt: [0.132, 0.132, 0.132] #Motors constants
   qSigns: [-1, 1, -1] # Joints direction
 
-  linkLengths: [0.056, 0.135, 0.5, 0.615]   # Link lengths used for kinematic models (in m), excluding tool
+  linkLengths: [0.0, 0.135, 0.5, 0.615]   # Link lengths used for kinematic models (in m), excluding tool
   linkMasses: [0, 0.450, 0.400, 0.100, .270] # Link masses used for gravity compensation (in kg), excluding tool
 
   qLimits: [-43, 43, -15, 70, 0, 95] # Joints limits (in deg) {q1_min, q1_max, q2_min, q2_max, q3_min, q3_max}
