@@ -87,11 +87,16 @@ void M3DemoMachine::init() {
     if(robot()->initialise()) {
         logHelper.initLogger("M3DemoMachineLog", "logs/M3DemoMachine.csv", LogFormat::CSV, true);
         logHelper.add(runningTime(), "Time (s)");
-        logHelper.add(robot()->getEndEffPosition(), "X");
+        /*logHelper.add(robot()->getEndEffPosition(), "X");
         logHelper.add(robot()->getEndEffVelocity(), "dX");
         logHelper.add(robot()->getInteractionForce(), "F");
         logHelper.add(robot()->getEndEffAcceleration(), "ddX");
-        logHelper.add(robot()->getEndEffVelocityFiltered(), "dXFilt");
+        logHelper.add(robot()->getEndEffVelocityFiltered(), "dXFilt");*/
+        logHelper.add(robot()->getPosition(), "q");
+        logHelper.add(robot()->getVelocity(), "dq");
+        logHelper.add(robot()->getTorque(), "tau");
+        logHelper.add(robot()->getEndEffPosition(), "X");
+        logHelper.add(robot()->getEndEffVelocity(), "dX");
         UIserver = std::make_shared<FLNLHelper>(*robot(), "192.168.7.2");
     }
     else {

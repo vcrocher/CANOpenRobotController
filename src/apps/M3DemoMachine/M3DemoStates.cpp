@@ -201,7 +201,7 @@ void M3MassCompensation::duringCode(void) {
     }
 
     //Apply corresponding force
-    robot->setEndEffForceWithCompensation(VM3(0,0,t*mass*9.8));
+    robot->setEndEffForceWithCompensation(VM3(0,0,t*mass*9.8), true);
 
     //Mass controllable through keyboard inputs
     if(robot->keyboard->getS()) {
