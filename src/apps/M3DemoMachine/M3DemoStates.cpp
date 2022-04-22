@@ -193,11 +193,11 @@ void M3MassCompensation::duringCode(void) {
     double t=running()>settling_time?1.0:running()/settling_time;
 
     //Bound mass to +-5kg
-    if(mass>5.0) {
-        mass = 5;
+    if(mass>15.0) {
+        mass = 15.;
     }
-    if(mass<-5) {
-        mass = -5;
+    if(mass<-15) {
+        mass = -15.;
     }
 
     //Apply corresponding force
@@ -205,12 +205,12 @@ void M3MassCompensation::duringCode(void) {
 
     //Mass controllable through keyboard inputs
     if(robot->keyboard->getS()) {
-        mass -=0.1;robot->printStatus();
+        mass -=0.5;robot->printStatus();
         robot->printJointStatus();
         std::cout << "Mass: " << mass << std::endl;
     }
     if(robot->keyboard->getW()) {
-        mass +=0.1;robot->printStatus();
+        mass +=0.5;robot->printStatus();
         robot->printJointStatus();
         std::cout << "Mass: " << mass << std::endl;
     }

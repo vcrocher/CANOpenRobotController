@@ -66,4 +66,4 @@ EMU_FOURIER:
   tool:
     name: "Fourier Handle"
     length: 0.0 #Tool length from attachment
-    mass:   2.5  #Tool mass in kg
+    mass:   0.0  #Tool mass in kg
