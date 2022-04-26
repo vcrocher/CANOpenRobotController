@@ -231,9 +231,9 @@ public:
         }
     }
 
-    bool pause(){ isRunning_=false; };
+    void pause(){ isRunning_=false; };
 
-    bool resume(){ isRunning_=true; };
+    void resume(){ isRunning_=true; };
 
     /**
      * \brief Records the values of the added variables at the instant the function is called.
