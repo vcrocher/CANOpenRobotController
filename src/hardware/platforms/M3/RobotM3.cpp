@@ -54,7 +54,7 @@ bool RobotM3::loadParametersFromYAML(YAML::Node params) {
     }
 
     if(params["tauMax"]){
-        tauMax = fmin(fmax(0., params_r["tauMax"].as<double>()), 50.); //Hard constrained for safety
+        tauMax = fmin(fmax(0., params_r["tauMax"].as<double>()), 80.); //Hard constrained for safety
     }
 
     fillParamVectorFromYaml(params_r["iPeakDrives"], iPeakDrives);

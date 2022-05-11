@@ -46,7 +46,7 @@ EMU_MELB:
 
 EMU_FOURIER:
   dqMax: 360 # Max joint speed (deg.s-1) Set to 1 rot/s
-  tauMax: 42 # Max joint torque (Nm) Set to max motor torque w/ 1:22 reduction (yes, this is the actual value!)
+  tauMax: 60 # Max joint torque (Nm) Set to max motor torque w/ 1:22 reduction (yes, this is the actual value!)
   iPeakDrives: [45.0, 23.0, 23.0] #Drive peak current (I peak): Values look wrong but work on real system in combination w/ below motor constants.
   motorCstt: [0.132, 0.132, 0.132] #Motors constants
   qSigns: [-1, 1, -1] # Joints direction
