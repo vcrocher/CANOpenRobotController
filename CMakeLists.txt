@@ -25,13 +25,13 @@ set (STATE_MACHINE_NAME "EMUFourierMachine")
 set (STATE_MACHINE_PATH "../")
 
 # Comment to use actual hardware, uncomment for a nor robot (virtual) app
-set(NO_ROBOT ON)
+set(NO_ROBOT OFF)
 
 # ROS Flag. set ON if you want to use ROS. Else, set OFF.
 set(USE_ROS OFF)
 # Select desired logging level (Options: TRACE, DEBUG, INFO, WARN, ERROR, CRITICAL OFF)
 # INFO is the recommended level in normal operation
-set(CORC_LOGGING_LEVEL INFO)
+set(CORC_LOGGING_LEVEL DEBUG)
 
 ################################################################################
 #Default path if not set
