@@ -44,9 +44,19 @@ void app_programAsync(uint16_t timer1msDiffy) {
 
 /******************** Runs in rt_control_thread ********************/
 void app_programControlLoop(void) {
+    std::chrono::steady_clock::time_point _t0 = std::chrono::steady_clock::now();
+
+    //StateMachine execution
     if (stateMachine->running()) {
         stateMachine->update();
     }
+
+    //Warn if time overflow (this is the effective used time, normally lower than the allocated time period)
+    double dt = (std::chrono::duration_cast<std::chrono::microseconds>(
+            std::chrono::steady_clock::now() - _t0).count()) / 1e6;
+    if(dt>controlLoopPeriodInms/1000.)
+        spdlog::warn("Applicaton thread time overflow: {}s", dt);
+
 }
 
 /******************** Runs at the End of rt_control_thread********************/

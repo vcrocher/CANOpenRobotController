@@ -48,7 +48,6 @@
 #include "CO_SDO.h"
 #include "CO_Emergency.h"
 
-
 /*
  * Function for accessing _Pre-Defined Error Field_ (index 0x1003) from SDO server.
  *
@@ -235,7 +234,7 @@ void CO_EM_process(
             (em->bufReadPtr != em->bufWritePtr || em->bufFull))
     {
         uint32_t preDEF;    /* preDefinedErrorField */
-        
+
         /* add error register */
         em->bufReadPtr[2] = *emPr->errorRegister;
 

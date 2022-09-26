@@ -27,11 +27,12 @@ EMU_MELB:
   dqMax: 360 # Max joint speed (deg.s-1) Set to 1 rot/s
   tauMax: 42 # Max joint torque (Nm) Set to max motor torque w/ 1:22 reduction (yes, this is the actual value!)
   iPeakDrives: [45.0, 45.0, 45.0] #Drive peak current (I peak)
-  motorCstt: [0.132, 0.132, 0.132] #Motors constants
+  motorCstt: [1., 1., 1.] #Motors constants
+  qSigns: [1, 1, 1] # Joints direction
 
   linkLengths: [0.056, 0.135, 0.5, 0.475]   # Link lengths used for kinematic models (in m), excluding tool
   linkMasses: [0., 0.450, 0.400, 0.100, .0] # Link masses used for gravity compensation (in kg), excluding tool
-
+  
   qLimits: [-45, 45, -15, 70, 0, 95] # Joints limits (in deg) {q1_min, q1_max, q2_min, q2_max, q3_min, q3_max}
   qCalibration: [-38, 70, 95] # Calibration configuration (in deg): posture in which the robot is when using the calibration procedure
 
