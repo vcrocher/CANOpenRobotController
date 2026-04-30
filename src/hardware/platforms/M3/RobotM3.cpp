@@ -3,14 +3,14 @@
 using namespace Eigen;
 using namespace std;
 
-RobotM3::RobotM3(string robot_name, string yaml_config_file) :  Robot(robot_name, yaml_config_file),
+RobotM3::RobotM3(string robot_name, string config_file) :  Robot(robot_name, config_file),
                                                                 endEffTool(&M3Handle),
                                                                 calibrated(false),
                                                                 maxEndEffVel(2),
                                                                 maxEndEffForce(60),
                                                                 velFilt(2, VM3::Zero()) {
     //Check if YAML file exists and contain robot parameters
-    initialiseFromYAML(yaml_config_file);
+    initialiseFromJSON(config_file);
 
     //TODO: to add joint specific parameters (reduction, torque constant) and associated YAML loading
 
@@ -39,56 +39,87 @@ RobotM3::~RobotM3() {
 }
 
 
-void RobotM3::fillParamVectorFromYaml(YAML::Node node, std::vector<double> &vec) {
-    if(node){
-        for(unsigned int i=0; i<vec.size(); i++)
-            vec[i]=node[i].as<double>();
-    }
-}
-
-bool RobotM3::loadParametersFromYAML(YAML::Node params) {
-    YAML::Node params_r=params[robotName]; //Specific node corresponding to the robot
-
-    if(params_r["dqMax"]){
-        dqMax = fmin(fmax(0., params_r["dqMax"].as<double>()), 360.) * M_PI / 180.; //Hard constrained for safety
-    }
-
-    if(params["tauMax"]){
-        tauMax = fmin(fmax(0., params_r["tauMax"].as<double>()), 80.); //Hard constrained for safety
-    }
-
-    fillParamVectorFromYaml(params_r["iPeakDrives"], iPeakDrives);
-    fillParamVectorFromYaml(params_r["motorCstt"], motorCstt);
-    fillParamVectorFromYaml(params_r["linkLengths"], linkLengths);
-    fillParamVectorFromYaml(params_r["massCoeff"], massCoeff);
-    fillParamVectorFromYaml(params_r["qSpringK"], springK);
-    fillParamVectorFromYaml(params_r["qSpringKo"], springKo);
-    fillParamVectorFromYaml(params_r["frictionVis"], frictionVis);
-    fillParamVectorFromYaml(params_r["frictionCoul"], frictionCoul);
-
-    if(params_r["qLimits"]){
-        for(unsigned int i=0; i<qLimits.size(); i++)
-            qLimits[i]=params_r["qLimits"][i].as<double>() * M_PI / 180.;
-    }
-
-    fillParamVectorFromYaml(params_r["qSigns"], qSigns);
-
-    if(params_r["qCalibration"]){
-        for(unsigned int i=0; i<qCalibration.size(); i++)
-            qCalibration[i]=params_r["qCalibration"][i].as<double>() * M_PI / 180.;
-    }
-
-    //Create and replace existing tool if one specified
-    if(params_r["tool"]){
-        if(params_r["tool"]["name"] && params_r["tool"]["length"] && params_r["tool"]["mass"]) {
-            M3Tool *t = new M3Tool(params_r["tool"]["length"].as<double>(), params_r["tool"]["mass"].as<double>(), params_r["tool"]["name"].as<string>()); //Will be destroyed at end of app
-            endEffTool = t;
+void RobotM3::fillParamVectorFromJSON(const json &node, std::vector<double> &vec) {
+    if (!node.is_null() && node.is_array()) {
+        for (unsigned int i = 0; i < vec.size(); i++) {
+            vec[i] = node.at(i).get<double>();
         }
     }
+}
 
-    spdlog::info("Using YAML M3 parameters of {} (Tool: {}).", robotName, endEffTool->name);
+
+bool RobotM3::loadParametersFromJSON(const json &params) {
+
+    // Check that a sub-object robotName exists
+    if (!params.contains(robotName)) {
+        spdlog::error("RobotM3::loadParametersFromJSON(): No entry for '{}' found in config.", robotName);
+        return false;
+    }
+
+    const json &params_r = params.at(robotName); //Sub-object for this robot
+
+    try {
+        //Scalar parameters with safety clamping
+        if (params_r.contains("dqMax")) {
+            dqMax = fmin(fmax(0., params_r.at("dqMax").get<double>()), 360.) * M_PI / 180.;
+        }
+
+        if (params_r.contains("tauMax")) {
+            tauMax = fmin(fmax(0., params_r.at("tauMax").get<double>()), 80.);
+        }
+
+        //Vector parameters (direct, no unit conversion)
+        fillParamVectorFromJSON(params_r.value("iPeakDrives", json(nullptr)), iPeakDrives);
+        fillParamVectorFromJSON(params_r.value("motorCstt",   json(nullptr)), motorCstt);
+        fillParamVectorFromJSON(params_r.value("linkLengths", json(nullptr)), linkLengths);
+        fillParamVectorFromJSON(params_r.value("massCoeff",   json(nullptr)), massCoeff);
+        fillParamVectorFromJSON(params_r.value("qSpringK",    json(nullptr)), springK);
+        fillParamVectorFromJSON(params_r.value("qSpringKo",   json(nullptr)), springKo);
+        fillParamVectorFromJSON(params_r.value("frictionVis", json(nullptr)), frictionVis);
+        fillParamVectorFromJSON(params_r.value("frictionCoul",json(nullptr)), frictionCoul);
+
+        //Joint limits (degrees -> radians)
+        if (params_r.contains("qLimits")) {
+            for (unsigned int i = 0; i < qLimits.size(); i++) {
+                qLimits[i] = params_r.at("qLimits").at(i).get<double>() * M_PI / 180.;
+            }
+        }
+
+        //Joint signs
+        fillParamVectorFromJSON(params_r.value("qSigns", json(nullptr)), qSigns);
+
+        //Calibration positions (degrees -> radians) ---
+        if (params_r.contains("qCalibration")) {
+            for (unsigned int i = 0; i < qCalibration.size(); i++) {
+                qCalibration[i] = params_r.at("qCalibration").at(i).get<double>() * M_PI / 180.;
+            }
+        }
+
+        //Optional tool definition
+        if (params_r.contains("tool")) {
+            const json &tool = params_r.at("tool");
+            if (tool.contains("name") && tool.contains("length") && tool.contains("mass")) {
+                M3Tool *t = new M3Tool(
+                    tool.at("length").get<double>(),
+                    tool.at("mass").get<double>(),
+                    tool.at("name").get<std::string>()
+                );
+                endEffTool = t;
+            }
+        }
+
+    } catch (const json::out_of_range &e) {
+        spdlog::error("RobotM3::loadParametersFromJSON(): Missing key: {}", e.what());
+        return false;
+    } catch (const json::type_error &e) {
+        spdlog::error("RobotM3::loadParametersFromJSON(): Type error: {}", e.what());
+        return false;
+    }
+
+    spdlog::info("Using JSON M3 parameters of {} (Tool: {}).", robotName, endEffTool->name);
     return true;
 }
+
 
 bool RobotM3::initialiseJoints() {
     return true;

@@ -55,7 +55,7 @@ endif()
 
 
 ## Get all source and header files (only the target app folder is included)
-file(GLOB_RECURSE COMMON_SOURCES    "src/core/*.cpp" "src/core/*.c" 
+file(GLOB_RECURSE COMMON_SOURCES    "src/core/*.cpp" "src/core/*.c"
                                     "src/hardware/IO/*.cpp" "src/hardware/IO/*.c"
                                     "src/hardware/drives/*.cpp" "src/hardware/drives/*.c"
                                     "${STATE_MACHINE_PATH}/*.c" "${STATE_MACHINE_PATH}/*.cpp"
@@ -83,6 +83,7 @@ list(REMOVE_DUPLICATES INCLUDE_DIRS)
 ###list (APPEND INCLUDE_DIRS lib/)
 list (APPEND INCLUDE_DIRS lib/Eigen/)
 list (APPEND INCLUDE_DIRS lib/spdlog/include/)
+list (APPEND INCLUDE_DIRS lib/nlohmann)
 if(USE_FLNL)
     list (APPEND INCLUDE_DIRS lib/FLNL/include/)
 endif()
@@ -94,7 +95,6 @@ endif()
 if(USE_FLNL)
     add_subdirectory(lib/FLNL/)
 endif()
-add_subdirectory(lib/yaml-cpp/)
 #if(WITH_FOURIER_AIOS)
 #    ## TODO: enforce static library (when available) and ensure underlying cpp also enforce static one (use full name with .a)
 #    ## TODO: switch on cross-compile version
@@ -166,7 +166,7 @@ if(ROS EQUAL 1)
     #include CATKIN
     include_directories(${catkin_INCLUDE_DIRS})
     set(ROS_LIBRARIES ${catkin_LIBRARIES})
-    
+
 ## Add ROS2 dependencies
 elseif(ROS EQUAL 2)
     #ROS 2 local compile: use colcon
@@ -198,7 +198,6 @@ find_package(Threads REQUIRED)
 ## Link non-ROS libraries
 target_link_libraries(  ${APP_NAME}
                         ${CMAKE_THREAD_LIBS_INIT}
-                        yaml-cpp
 )
 
 if(USE_FLNL)

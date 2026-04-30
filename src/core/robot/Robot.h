@@ -22,9 +22,10 @@
 #include <vector>
 #define EIGEN_RUNTIME_NO_MALLOC //! Flag preventing Eigen to do dynaic allocation (can be bad in RT). See https://github.com/stulp/tutorials/blob/master/test.md for details.
 #include <Eigen/Dense>
-// yaml-parser
 #include <fstream>
-#include "yaml-cpp/yaml.h"
+#include <iostream>
+//Json parser
+#include <json.hpp>
 
 // These are used to access the MACRO: BASE_DIRECTORY
 #define XSTR(x) STR(x)
@@ -33,6 +34,7 @@
 #include "InputDevice.h"
 #include "Joint.h"
 
+using json = nlohmann::json;
 
 short int sign(double val);
 
@@ -67,9 +69,9 @@ class Robot {
     /**
     * \brief Default Robot constructor.
     * \param robot_name a name of the robot. If a yaml_config_file is also provided, the name will be used to seek parameters in this file (and so should match robot name in the YAML file).
-    * \param yaml_config_file the name of a valide YAML file describing kinematic and dynamic parameters of the M3. If absent or incomplete default parameters are used instead.
+    * \param config_file the name of a valide JSON file describing kinematic and dynamic parameters of the robot. If absent or incomplete default parameters are used instead.
     */
-    Robot(std::string robot_name="", std::string yaml_config_file="");
+    Robot(std::string robot_name="", std::string config_file="");
     virtual ~Robot();
     //@}
 
@@ -145,19 +147,19 @@ class Robot {
 
    protected:
     /**
-    * \brief Attempts to read specified parameters YAML file (in config folder) if a filename is specified.
-    * Load configuration associated with RobotName (if specified) and pass it to specialised initialiseFromYAML.
-    * \param yaml_config_file a YAML filename (assume located in config folder)
-    * \return true if succesfully open the YAML file and a robot with RobotName exists. false otherwise
+    * \brief Attempts to read specified parameters JSON file (in config folder) if a filename is specified.
+    * Load configuration associated with RobotName (if specified) and pass it to specialised initialiseFromJSON.
+    * \param yaml_config_file a JSON filename (assume located in config folder)
+    * \return true if succesfully open the JSON file and a robot with RobotName exists. false otherwise
     */
-    virtual bool initialiseFromYAML(std::string yaml_config_file) final;
+    virtual bool initialiseFromJSON(std::string config_file)  final;
     /**
     * \brief Load parameters from YAML file if valid one specified in constructor.
     * Default base version not doing anything. See derived class for implementation.
     * \param params a valid YAML robot parameters node loaded by initialiseFromYAML() method.
     * \return true
     */
-    virtual bool loadParametersFromYAML(YAML::Node params) { spdlog::info("Robot does not support YAML: using default robot parameters."); return false; };
+    virtual bool loadParametersFromJSON(const json &params) { spdlog::info("Robot does not support JSON: using default robot parameters."); return false; };
 
    public:
 

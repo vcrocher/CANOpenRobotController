@@ -8,8 +8,8 @@
  *
  */
 
-#ifndef M3DemoSTATE_H_DEF
-#define M3DemoSTATE_H_DEF
+#ifndef M3DEMOSTATE_H
+#define M3DEMOSTATE_H
 
 #include "State.h"
 #include "RobotM3.h"
@@ -18,53 +18,25 @@
 class M3DemoMachine;
 
 /**
- * \brief Generic state type for used with M3DemoMachine, providing running time and iterations number: been superseeded by default state.
+ * \brief Generic state type for used with M3DemoMachine with a pointer to M3Robot.
  *
  */
-class M3TimedState : public State {
+class M3State : public State {
    protected:
     RobotM3 * robot;                               //!< Pointer to state machines robot object
 
-    M3TimedState(RobotM3* M3, const char *name = NULL): State(name), robot(M3){spdlog::debug("Created M3TimedState {}", name);};
-   private:
-    void entry(void) final {
-        std::cout
-        << "==================================" << std::endl
-        << " STARTING  " << getName() << std::endl
-        << "----------------------------------" << std::endl
-        << std::endl;
-
-        //Actual state entry
-        entryCode();
-    };
-    void during(void) final {
-        //Actual state during
-        duringCode();
-    };
-    void exit(void) final {
-        exitCode();
-        std::cout
-        << "----------------------------------" << std::endl
-        << "EXIT "<< getName() << std::endl
-        << "==================================" << std::endl
-        << std::endl;
-    };
-
-   public:
-    virtual void entryCode(){};
-    virtual void duringCode(){};
-    virtual void exitCode(){};
+    M3State(RobotM3* M3, const char *name = NULL): State(name), robot(M3){spdlog::debug("Created M3State {}", name);};
 };
 
 
-class M3DemoState : public M3TimedState {
+class M3DemoState : public M3State {
 
    public:
-    M3DemoState(RobotM3 * M3, const char *name = "M3 Test State"):M3TimedState(M3, name){};
+    M3DemoState(RobotM3 * M3, const char *name = "M3 Test"):M3State(M3, name){};
 
-    void entryCode(void);
-    void duringCode(void);
-    void exitCode(void);
+    void entry(void);
+    void during(void);
+    void exit(void);
 
     VM3 qi, Xi;
     VM3 tau;
@@ -77,14 +49,14 @@ class M3DemoState : public M3TimedState {
  * \brief Position calibration of M3. Go to the bottom left stops of robot at constant torque for absolute position calibration.
  *
  */
-class M3CalibState : public M3TimedState {
+class M3CalibState : public M3State {
 
    public:
-    M3CalibState(RobotM3 * M3, const char *name = "M3 Calib State"):M3TimedState(M3, name){};
+    M3CalibState(RobotM3 * M3, const char *name = "M3 Calib"):M3State(M3, name){};
 
-    void entryCode(void);
-    void duringCode(void);
-    void exitCode(void);
+    void entry(void);
+    void during(void);
+    void exit(void);
 
     bool isCalibDone() {return calibDone;}
 
@@ -100,14 +72,14 @@ class M3CalibState : public M3TimedState {
  * \brief Provide end-effector mass compensation on M3. Mass is controllable through keyboard inputs.
  *
  */
-class M3MassCompensation : public M3TimedState {
+class M3MassCompensation : public M3State {
 
    public:
-    M3MassCompensation(RobotM3 * M3, const char *name = "M3 Mass Compensation"):M3TimedState(M3, name){};
+    M3MassCompensation(RobotM3 * M3, const char *name = "M3 Mass Compensation"):M3State(M3, name){};
 
-    void entryCode(void);
-    void duringCode(void);
-    void exitCode(void);
+    void entry(void);
+    void during(void);
+    void exit(void);
 
    private:
      double mass = 0;
@@ -119,28 +91,28 @@ class M3MassCompensation : public M3TimedState {
  * \brief End-effector velocity control through joystick input.
  *
  */
-class M3EndEffDemo : public M3TimedState {
+class M3EndEffDemo : public M3State {
 
    public:
-    M3EndEffDemo(RobotM3 * M3, const char *name = "M3 Velocity Control Demo"):M3TimedState(M3, name){};
+    M3EndEffDemo(RobotM3 * M3, const char *name = "M3 Velocity Control Demo"):M3State(M3, name){};
 
-    void entryCode(void);
-    void duringCode(void);
-    void exitCode(void);
+    void entry(void);
+    void during(void);
+    void exit(void);
 };
 
 /**
  * \brief Basic impedance control on a static point.
  *
  */
-class M3DemoImpedanceState : public M3TimedState {
+class M3DemoImpedanceState : public M3State {
 
    public:
-    M3DemoImpedanceState(RobotM3 * M3, const char *name = "M3 Demo Impedance State"):M3TimedState(M3, name){};
+    M3DemoImpedanceState(RobotM3 * M3, const char *name = "M3 Demo Impedance"):M3State(M3, name){};
 
-    void entryCode(void);
-    void duringCode(void);
-    void exitCode(void);
+    void entry(void);
+    void during(void);
+    void exit(void);
 
     bool &isInit() {return init;}
 
@@ -161,14 +133,14 @@ class M3DemoImpedanceState : public M3TimedState {
  * \brief Teleoperation state
  *
  */
-class M3TeleopState : public M3TimedState {
+class M3TeleopState : public M3State {
 
    public:
-    M3TeleopState(RobotM3 * M3, M3DemoMachine &sm, const char *name = "M3 Teleop State"):M3TimedState(M3, name), SM(sm) {};
+    M3TeleopState(RobotM3 * M3, M3DemoMachine &sm, const char *name = "M3 Teleop"):M3State(M3, name), SM(sm) {};
 
-    void entryCode(void);
-    void duringCode(void);
-    void exitCode(void);
+    void entry(void);
+    void during(void);
+    void exit(void);
 
    private:
     M3DemoMachine &SM;
@@ -181,14 +153,14 @@ class M3TeleopState : public M3TimedState {
  * \brief Path contraint with viscous assistance.
  *
  */
-class M3DemoPathState : public M3TimedState {
+class M3DemoPathState : public M3State {
 
    public:
-    M3DemoPathState(RobotM3 * M3, const char *name = "M3 Demo Path State"):M3TimedState(M3, name){};
+    M3DemoPathState(RobotM3 * M3, const char *name = "M3 Demo Path"):M3State(M3, name){};
 
-    void entryCode(void);
-    void duringCode(void);
-    void exitCode(void);
+    void entry(void);
+    void during(void);
+    void exit(void);
 
     short int sign(double val) {return (val>0)?1:((val<0)?-1:0); };
 
@@ -205,14 +177,14 @@ class M3DemoPathState : public M3TimedState {
  * \brief Point to point position control with min jerk trajectory interpolation
  *
  */
-class M3DemoMinJerkPosition: public M3TimedState {
+class M3DemoMinJerkPosition: public M3State {
 
    public:
-    M3DemoMinJerkPosition(RobotM3 * M3, const char *name = "M3 Demo Minimum Jerk Position"):M3TimedState(M3, name){};
+    M3DemoMinJerkPosition(RobotM3 * M3, const char *name = "M3 Demo Minimum Jerk Position"):M3State(M3, name){};
 
-    void entryCode(void);
-    void duringCode(void);
-    void exitCode(void);
+    void entry(void);
+    void during(void);
+    void exit(void);
 
    private:
     static const unsigned int TrajNbPts=13;
@@ -230,14 +202,14 @@ class M3DemoMinJerkPosition: public M3TimedState {
  * \brief Sampling frequency estimation state.
  *
  */
-class M3SamplingEstimationState : public M3TimedState {
+class M3SamplingEstimationState : public M3State {
 
    public:
-    M3SamplingEstimationState(RobotM3 * M3, const char *name = "M3 Sampling time estimation State"):M3TimedState(M3, name){};
+    M3SamplingEstimationState(RobotM3 * M3, const char *name = "M3 Sampling time estimation"):M3State(M3, name){};
 
-    void entryCode(void);
-    void duringCode(void);
-    void exitCode(void);
+    void entry(void);
+    void during(void);
+    void exit(void);
 
    private:
     unsigned int nb_samples=10000;

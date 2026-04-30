@@ -2,7 +2,7 @@
 
 short int sign(double val) { return (val > 0) ? 1 : ((val < 0) ? -1 : 0); }
 
-Robot::Robot(std::string robot_name, std::string yaml_config_file): robotName(robot_name) {
+Robot::Robot(std::string robot_name, std::string config_file): robotName(robot_name) {
     spdlog::debug("Robot ({}) object created", robotName);
 }
 
@@ -10,34 +10,49 @@ Robot::~Robot() {
     spdlog::debug("Robot object deleted");
 }
 
-
-bool Robot::initialiseFromYAML(std::string yaml_config_file) {
-    if(yaml_config_file.size()>0) {
-        // need to use address of base directory because when run with ROS, working directory is ~/.ros
-        std::string baseDirectory = XSTR(BASE_DIRECTORY);
+bool Robot::initialiseFromJSON(std::string config_file) {
+    if (config_file.size() > 0) {
+        // Need to use address of base directory because when run with ROS,
+        // working directory is ~/.ros
+        std::string baseDirectory    = XSTR(BASE_DIRECTORY);
         std::string relativeFilePath = "/config/";
+        std::string fullPath         = baseDirectory + relativeFilePath + config_file;
+
+        std::ifstream configFileStream(fullPath);
+        if (!configFileStream.is_open()) {
+            spdlog::error("Failed to open JSON config file: {}. Using default parameters instead.", fullPath);
+            return false;
+        }
+
         try {
-            YAML::Node params = YAML::LoadFile(baseDirectory + relativeFilePath + yaml_config_file);
+            // ignore_comments=true allows // and /* */ style comments in the JSON file
+            json params = json::parse(configFileStream,
+                                      /*callback*/         nullptr,
+                                      /*allow_exceptions*/  true,
+                                      /*ignore_comments*/   true);
 
-            if(!params[robotName]){
-                spdlog::error("Parameters of {} couldn't be found in {} !", robotName, baseDirectory + relativeFilePath + yaml_config_file);
+            if (!params.contains(robotName)) {
+                spdlog::error("Parameters of {} couldn't be found in {} !", robotName, fullPath);
                 spdlog::error("Default parameters used !");
-
                 return false;
             }
             else {
-                spdlog::info("Loading robot parameters from {}.", baseDirectory + relativeFilePath + yaml_config_file);
-                //Attempt to load parameters from YAML file (delegated to each custom robot implementation)
-                return loadParametersFromYAML(params);
+                spdlog::info("Loading robot parameters from {}.", fullPath);
+                // Attempt to load parameters from JSON file
+                // (delegated to each custom robot implementation)
+                return loadParametersFromJSON(params);
             }
 
+        } catch (const json::parse_error &e) {
+            spdlog::error("Failed parsing JSON from {}: {}. Using default parameters instead.", fullPath, e.what());
+            return false;
         } catch (...) {
-            spdlog::error("Failed loading parameters from {}. Using default parameters instead.", baseDirectory + relativeFilePath + yaml_config_file);
+            spdlog::error("Failed loading parameters from {}. Using default parameters instead.", fullPath);
             return false;
         }
     }
     else {
-        spdlog::info("Using default robot parameters (no YAML file specified).");
+        spdlog::info("Using default robot parameters (no JSON file specified).");
         return false;
     }
 }

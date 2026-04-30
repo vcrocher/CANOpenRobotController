@@ -19,6 +19,8 @@
 #include "Robot.h"
 #include "SignalProcessing.h"
 
+using json = nlohmann::json;
+
 
 typedef Eigen::Vector3d VM3; //!< Convenience alias for double  Vector of length 3
 typedef Eigen::VectorXd VX; //!< Generic (dynamic) size version required for compatibility w/ other libraries (FLNL)
@@ -108,9 +110,9 @@ class RobotM3 : public Robot {
     /**
       * \brief Default RobotM3 constructor.
       * Creates joints and inputs.
-      * \param yaml_config_file the name of a valide YAML file describing kinematic and dynamic parameters of the M3. If absent or incomplete default parameters are used instead.
+      * \param config_file the name of a valid JSON file describing kinematic and dynamic parameters of the M3. If absent or incomplete default parameters are used instead.
       */
-    RobotM3(std::string robot_name="", std::string yaml_config_file="");
+    RobotM3(std::string robot_name="", std::string config_file="");
     ~RobotM3();
 
     Keyboard *keyboard;
@@ -143,18 +145,18 @@ class RobotM3 : public Robot {
    private:
 
     /**
-    * \brief Utility method filling vec with the values loaded from the YAML node. Expect same vector lengths.
+    * \brief Utility method filling vec with the values loaded from the JSON node. Expect same vector lengths.
     *
     */
-    void fillParamVectorFromYaml(YAML::Node node, std::vector<double> &vec);
+    void fillParamVectorFromJSON(const json &node, std::vector<double> &vec);
 
     /**
-    * \brief Load parameters from YAML file if valid one specified in constructor.
+    * \brief Load parameters from JSON file if valid one specified in constructor.
     * If absent or incomplete (some parameters only) default parameters are used instead.
-    * \param params a valid YAML robot parameters node loaded by initialiseFromYAML() method.
+    * \param params a valid JSON robot parameters node loaded by initialiseFromJSON() method.
     * \return true
     */
-    bool loadParametersFromYAML(YAML::Node params);
+    bool loadParametersFromJSON(const json &params);
 
     /**
     * \brief Set the target positions for each of the joints

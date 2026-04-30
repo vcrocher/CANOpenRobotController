@@ -1,0 +1,75 @@
+// M3 Robot Parameters
+//
+//                              /\
+//                            /-  \
+//                          /-     \
+//                        /-        \
+//              (L4)    /-           \
+//                    /-  \           \
+//                  /-     \           \
+//                 /        \           \
+//               /-          \           \
+//           M3/-             \        M1 \
+//           /-                \           \
+//         /-                   \           \
+//       /-                   M2 \           \
+//     /-                         \           \
+// +------+                         \           \
+// | MTool|                          \           \
+// +------+                           \         q1-  (L0)
+//                                     \          -------
+//                                      \    (L1)      q0
+//                                     q2              |
+
+{
+  "EMU_MELB": {
+    "dqMax": 360,           // Max joint speed (deg/s) - set to 1 rot/s
+    "tauMax": 42,           // Max joint torque (Nm) - max motor torque w/ 1:22 reduction
+    "iPeakDrives": [45.0, 45.0, 45.0],     // Drive peak current (A)
+    "motorCstt":   [1.0, 1.0, 1.0],        // Motor constants
+    "qSigns":      [1, 1, 1],              // Joint directions
+
+    "linkLengths": [0.056, 0.135, 0.5, 0.475],         // Link lengths for kinematics (m), excluding tool
+    "linkMasses":  [0.0, 0.450, 0.400, 0.100, 0.0],    // Link masses for gravity compensation (kg), excluding tool
+
+    "qLimits":      [-45, 45, -15, 70, 0, 95],  // Joint limits (deg): [q1_min, q1_max, q2_min, q2_max, q3_min, q3_max]
+    "qCalibration": [-38, 70, 95],               // Calibration posture (deg)
+
+    "frictionVis":  [0.2, 0.2, 0.2],   // Viscous friction compensation coefficients
+    "frictionCoul": [0.5, 0.5, 0.5],   // Coulomb (static) friction compensation coefficients
+
+    // End-effector tool definition - uncomment to enable
+    // "tool": {
+    //   "name":   "Handle",
+    //   "length": 0.14,   // Tool length from attachment point (m)
+    //   "mass":   0.8     // Tool mass (kg)
+    // }
+  },
+
+  "EMU_FOURIER": {
+    "dqMax": 360,           // Max joint speed (deg/s) - set to 1 rot/s
+    "tauMax": 80,           // Max joint torque (Nm) - max motor torque w/ 1:22 reduction
+    "iPeakDrives": [45.0, 23.0, 23.0],         // Drive peak current (A) - values look unusual but verified on real system
+    "motorCstt":   [0.132, 0.132, 0.132],       // Motor constants
+    "qSigns":      [-1, 1, -1],                // Joint directions
+
+    "linkLengths": [0.0, 0.135, 0.5, 0.615],   // Link lengths for kinematics (m), excluding tool
+    "massCoeff":   [-1.30, -1.06],             // Identified mass coefficients for gravity compensation (kg), excluding tool
+                                                // Model: tau[1] = M[0]*sin(q[1])*g,  tau[2] = M[1]*cos(q[2])*g
+    "qSpringK":  [0.0, 2.42, 4.19],            // Joint spring stiffness: tau = Ko + K*q
+    "qSpringKo": [0.0, 0.47, 0.0],             // Joint spring offset
+
+    "qLimits":      [-42, 42, -15, 70, -5, 95], // Joint limits (deg): [q1_min, q1_max, q2_min, q2_max, q3_min, q3_max]
+    "qCalibration": [44, 76, 90],               // Calibration posture (deg)
+
+    "frictionVis":  [0.33, 0.76, 0.69],  // Viscous friction compensation coefficients
+    "frictionCoul": [0.35, 0.19, 0.24],  // Coulomb (static) friction compensation coefficients
+
+    // End-effector tool definition
+    "tool": {
+      "name":   "Fourier Handle",
+      "length": 0.0,   // Tool length from attachment point (m)
+      "mass":   0.1    // Tool mass (kg)
+    }
+  }
+}
